@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0E2B3B">
+<meta name="apple-mobile-web-app-title" content="Cape Town">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9968;</text></svg>">
+<title>Cape Town countdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF1F0; --surface:#F7FAF9; --ink:#0E2B3B; --muted:#4A6572; --line:#C4D5D3;
+  --accent:#C8341F; --ok:#2C7A5F; --sea:#1F6F78;
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1B24; --surface:#132630; --ink:#E6EFEE; --muted:#9DB4BC; --line:#274250;
+    --accent:#FF6B55; --ok:#5CC7A0; --sea:#3AA7B0;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1B24; --surface:#132630; --ink:#E6EFEE; --muted:#9DB4BC; --line:#274250;
+  --accent:#FF6B55; --ok:#5CC7A0; --sea:#3AA7B0;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.45 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;letter-spacing:-.01em}
+p{margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#app{max-width:480px;margin:0 auto;padding:12px 20px calc(96px + env(safe-area-inset-bottom))}
+
+.top{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.who{font-family:var(--display);font-weight:800;font-size:20px}
+.link{background:none;border:0;padding:0 0 0 12px;min-height:44px;text-decoration:underline;color:var(--muted);cursor:pointer}
+.warn{background:var(--surface);border-left:4px solid var(--accent);padding:10px 12px;margin:4px 0 12px;font-size:15px}
+
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin:6px 0 2px}
+.count{font-family:var(--display);font-weight:800;font-size:96px;line-height:.85;letter-spacing:-.04em;color:var(--accent)}
+.count-label{font-size:18px;margin-top:8px}
+.mtn{width:46%;max-width:190px;flex:none;display:block}
+.mtn .base{fill:var(--line)}
+.mtn .fill{fill:var(--sea)}
+.prog{margin:10px 0 26px;color:var(--muted)}
+
+.daynav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.dayhead{text-align:center}
+.date{font-weight:700}
+.hint{color:var(--muted);font-size:15px}
+.sq{width:44px;height:44px;border:2px solid var(--ink);border-radius:12px;background:transparent;font-size:24px;line-height:1;cursor:pointer}
+.sq:disabled{opacity:.3;cursor:default}
+.plan-title{font-size:34px;font-weight:800;margin-top:6px}
+.plan-sub{color:var(--muted);margin:6px 0 14px}
+
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);min-height:68px}
+.row .lab b{display:block;font-weight:700}
+.seg,.step{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:12px;overflow:hidden;flex:none}
+.seg button{background:transparent;border:0;min-width:48px;min-height:44px;padding:0 14px;font-weight:700;cursor:pointer}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.step button{width:48px;min-height:44px;background:transparent;border:0;font-size:24px;font-weight:700;cursor:pointer}
+.step output{min-width:40px;text-align:center;font-weight:700}
+.num{width:124px;min-height:44px;border:2px solid var(--ink);border-radius:12px;background:var(--surface);padding:0 12px;text-align:right;font-weight:700}
+
+.btn{min-height:48px;padding:0 20px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--bg);font-weight:700;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink)}
+.btn.danger{border-color:var(--accent);background:var(--accent);color:#fff}
+
+.weekbar{margin-bottom:6px}
+.dots{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin:16px 0 8px;font-size:14px;color:var(--muted)}
+.dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--muted);margin:6px auto 0}
+.dot.on{background:var(--ok);border-color:var(--ok)}
+.dot.sess{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ok)}
+.stat{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.stat span:last-child{font-weight:700;text-align:right}
+.chart{width:100%;height:auto;display:block;margin:14px 0 6px}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chart .goal{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 4}
+.chart .ln{stroke:var(--sea);stroke-width:2.5;fill:none;stroke-linejoin:round}
+.chart .pt{fill:var(--sea)}
+.chart text{fill:var(--muted);font-size:11px}
+textarea.sum{width:100%;min-height:210px;border:2px solid var(--ink);border-radius:12px;background:var(--surface);padding:12px;resize:vertical;line-height:1.4}
+.section-title{font-size:24px;font-weight:800;margin:26px 0 8px}
+
+details{border-top:1px solid var(--line);padding:6px 0 12px}
+summary{font-family:var(--display);font-weight:800;font-size:21px;min-height:48px;display:flex;align-items:center;cursor:pointer}
+details ul{margin:6px 0 4px;padding-left:20px}
+details li{margin:6px 0}
+details h3{font-size:17px;margin:14px 0 2px}
+.note{color:var(--muted);font-size:15px;margin-top:10px}
+
+#tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+#tabs .in{display:flex;max-width:480px;margin:0 auto}
+#tabs button{flex:1;min-height:58px;background:none;border:0;border-top:3px solid transparent;font-weight:700;color:var(--muted);cursor:pointer}
+#tabs button[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
+
+.sheet{position:fixed;inset:0;background:var(--bg);overflow:auto;z-index:20}
+.sheet .in{max-width:480px;margin:0 auto;padding:28px 20px 40px}
+.sheet h2{font-size:32px;font-weight:800;margin-bottom:6px}
+.chips{display:flex;gap:10px;margin-top:8px}
+.chips label{flex:1;position:relative}
+.chips input{position:absolute;opacity:0;inset:0}
+.chips span{display:block;text-align:center;padding:14px;border:2px solid var(--ink);border-radius:12px;font-weight:700}
+.chips input:checked+span{background:var(--ink);color:var(--bg)}
+.chips input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.field{display:block;margin-top:20px;font-weight:700}
+.field .num{width:100%;text-align:left;margin-top:6px}
+.err{color:var(--accent);margin-top:12px;min-height:24px}
+.btns{display:flex;gap:10px;margin-top:20px}
+@media (prefers-reduced-motion:no-preference){
+  .mtn .fill-rect{transition:y .6s ease}
+}
+</style>
+</head>
+<body>
+<h1 class="sr">Cape Town countdown tracker</h1>
+<div id="app">
+  <div id="hdr"></div>
+  <main id="view"></main>
+</div>
+<nav id="tabs" aria-label="Sections"><div class="in">
+  <button type="button" data-act="tab" data-tab="today">Today</button>
+  <button type="button" data-act="tab" data-tab="week">Week</button>
+  <button type="button" data-act="tab" data-tab="plan">Plan</button>
+</div></nav>
+<div id="setup" class="sheet" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- dates (all math in whole-day numbers, no timezone drift) ---------- */
+var DAY=86400000;
+function dn(y,m,d){return Math.floor(Date.UTC(y,m,d)/DAY);}
+var START_N=dn(2026,8,21);   // Monday 21 Sep 2026 = start of week 1
+var GOAL_N=dn(2026,11,1);    // 1 Dec 2026
+var TRAVEL_N=dn(2026,11,20); // 20 Dec 2026
+var now=new Date();
+var TODAY_N=dn(now.getFullYear(),now.getMonth(),now.getDate());
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function p2(n){return n<10?'0'+n:''+n;}
+function ymd(n){var d=new Date(n*DAY);return d.getUTCFullYear()+'-'+p2(d.getUTCMonth()+1)+'-'+p2(d.getUTCDate());}
+function fromYmd(s){var a=s.split('-');return dn(+a[0],+a[1]-1,+a[2]);}
+function dow(n){return new Date(n*DAY).getUTCDay();}
+function monday(n){return n-((dow(n)+6)%7);}
+function weekNo(n){return Math.floor((monday(n)-START_N)/7)+1;}
+function fmt(n){var d=new Date(n*DAY);return DAYS[d.getUTCDay()]+' '+d.getUTCDate()+' '+MONTHS[d.getUTCMonth()];}
+function fmtShort(n){var d=new Date(n*DAY);return d.getUTCDate()+' '+MONTHS[d.getUTCMonth()];}
+
+/* ---------- small helpers ---------- */
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function kg(x){return (Math.round(x*10)/10).toFixed(1);}
+function signed(x){var r=Math.round(x*10)/10;return (r>0?'+':r<0?'\u2212':'')+Math.abs(r).toFixed(1);}
+function thou(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+
+/* ---------- storage (per phone, private to this page) ---------- */
+var KEY='cape-town-mission-v1';
+var storageOK=true;
+try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){storageOK=false;}
+function blank(){return {v:1,profile:null,days:{},weights:{}};}
+function load(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object'){o.days=o.days||{};o.weights=o.weights||{};return o;}}
+  }catch(e){storageOK=false;}
+  return blank();
+}
+var state=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){storageOK=false;}}
+
+var ui={tab:'today',sel:TODAY_N,weekSel:monday(TODAY_N),setupOpen:false,clearArmed:false};
+
+function getDay(n){return state.days[ymd(n)]||{};}
+function setDay(n,key,val){
+  var k=ymd(n);
+  state.days[k]=state.days[k]||{};
+  if(val===null||val===undefined||val===''){delete state.days[k][key];}
+  else{state.days[k][key]=val;}
+  if(!Object.keys(state.days[k]).length){delete state.days[k];}
+  save();
+}
+
+/* ---------- plan data ---------- */
+var SCHED={
+  1:{title:'Walk day',sub:'Steps only today. Break up the day with a few short walks.'},
+  2:{title:'Session A',sub:'15 to 20 minutes from about 17:45, while the meal reheats.',session:'A'},
+  3:{title:'Walk day',sub:'Steps only. Wednesday stays free of sessions.'},
+  4:{title:'Session B',sub:'15 to 20 minutes from about 17:45, while the meal reheats.',session:'B'},
+  5:{title:'Walk day',sub:'Steps only today.'},
+  6:{title:'Session C',sub:'25 to 30 minutes: a brisk 15-minute walk plus one round of Session A and B. Do it on Saturday or Sunday.',session:'C'},
+  0:{title:'Batch cook and check-in',sub:'Cook two big pots, weigh in on the Week tab, and copy your week summary for our check-in. Do Session C today if Saturday was missed.',session:'C'}
+};
+
+function baseline(){
+  var vals=[];
+  for(var i=0;i<7;i++){var d=state.days[ymd(START_N+i)];if(d&&typeof d.steps==='number')vals.push(d.steps);}
+  if(vals.length<3)return null;
+  return vals.reduce(function(a,b){return a+b;},0)/vals.length;
+}
+function stepTarget(w){
+  if(w<2)return null;
+  var b=baseline();
+  if(b===null)return null;
+  return Math.round((b+1000*Math.floor(Math.min(w,10)/2))/100)*100;
+}
+function stepsHint(n){
+  var w=weekNo(n);
+  if(w<1)return 'Week 1 measures your baseline';
+  if(w===1)return 'Baseline week: just log it';
+  var t=stepTarget(w);
+  return t===null?'Log 3 days in week 1 to set a target':'Target about '+thou(t);
+}
+
+/* ---------- stats ---------- */
+function weekStats(mon){
+  var days=[],logged=0,sessions=0,stepsArr=[],meals=0,mealsDays=0,take=0,sugar=0,waterArr=[];
+  for(var i=0;i<7;i++){
+    var n=mon+i,d=state.days[ymd(n)]||{};
+    var any=Object.keys(d).length>0;
+    if(any)logged++;
+    if(d.session==='y')sessions++;
+    if(typeof d.steps==='number')stepsArr.push(d.steps);
+    if(typeof d.meals==='number'){meals+=d.meals;mealsDays++;}
+    if(d.takeaway==='y')take++;
+    if(d.sugar==='y')sugar++;
+    if(typeof d.water==='number')waterArr.push(d.water);
+    days.push({n:n,any:any,session:d.session==='y'});
+  }
+  function avg(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:null;}
+  return {days:days,logged:logged,sessions:sessions,steps:avg(stepsArr),meals:meals,mealsMax:mealsDays*3,take:take,sugar:sugar,water:avg(waterArr)};
+}
+function latestWeight(){
+  var keys=Object.keys(state.weights).sort();
+  return keys.length?state.weights[keys[keys.length-1]]:null;
+}
+
+/* ---------- views ---------- */
+function heroHtml(){
+  var p=state.profile;
+  var left=GOAL_N-TODAY_N,big,label;
+  if(left>0){big=left;label=(left===1?'day':'days')+' to 1 December';}
+  else if(TRAVEL_N-TODAY_N>0){big=TRAVEL_N-TODAY_N;label='days until you travel';}
+  else{big='';label='Enjoy Cape Town';}
+  var lw=latestWeight(),pct=0,prog;
+  if(p&&lw!==null){
+    var lost=p.start-lw;
+    pct=clamp(lost/p.goal,0,1);
+    prog=lost>=0?kg(lost)+' of '+kg(p.goal)+' kg lost':'Up '+kg(-lost)+' kg from your start weight';
+  }else{prog='Add your first weigh-in in the Week tab.';}
+  var y=100-pct*70;
+  var path='M0 100 L0 88 C12 82 24 72 32 58 C38 48 42 40 48 35 L54 31 L110 31 L116 35 C124 44 130 52 138 64 C146 76 154 84 160 88 L160 100 Z';
+  return '<section class="hero" aria-label="Countdown and progress">'+
+    '<div><div class="count">'+big+'</div><div class="count-label">'+label+'</div></div>'+
+    '<svg class="mtn" viewBox="0 0 160 100" role="img" aria-label="Table Mountain filling up as you lose weight: '+Math.round(pct*100)+' percent">'+
+    '<defs><clipPath id="mclip"><rect class="fill-rect" x="0" y="'+y+'" width="160" height="100"/></clipPath></defs>'+
+    '<path class="base" d="'+path+'"/><path class="fill" clip-path="url(#mclip)" d="'+path+'"/></svg>'+
+    '</section><p class="prog">'+prog+'</p>';
+}
+
+function segHtml(key,opts,cur){
+  var out='<div class="seg" role="group" aria-label="'+key+'">';
+  opts.forEach(function(o){
+    var on=(cur!==undefined&&cur!==null&&String(cur)===String(o[0]));
+    out+='<button type="button" data-act="set" data-key="'+key+'" data-val="'+o[0]+'" aria-pressed="'+on+'">'+o[1]+'</button>';
+  });
+  return out+'</div>';
+}
+function rowHtml(title,hint,ctl,hintId){
+  return '<div class="row"><div class="lab"><b>'+title+'</b>'+(hint!==''?'<span class="hint"'+(hintId?' id="'+hintId+'"':'')+'>'+hint+'</span>':'')+'</div>'+ctl+'</div>';
+}
+
+function todayView(){
+  var n=ui.sel,d=getDay(n),sch=SCHED[dow(n)],w=weekNo(n),wl;
+  if(w<1)wl='Getting ready. Week 1 starts Monday 21 September.';
+  else if(w<=10)wl='Week '+w+' of 10';
+  else wl='After week 10';
+  var h=heroHtml();
+  h+='<section aria-label="Daily log"><div class="daynav">'+
+    '<button type="button" class="sq" data-act="prev" aria-label="Earlier day">&lsaquo;</button>'+
+    '<div class="dayhead"><div class="date">'+fmt(n)+(n===TODAY_N?' (today)':'')+'</div><div class="hint">'+wl+'</div></div>'+
+    '<button type="button" class="sq" data-act="next" aria-label="Later day"'+(n>=TODAY_N?' disabled':'')+'>&rsaquo;</button></div>'+
+    '<h2 class="plan-title">'+sch.title+'</h2><p class="plan-sub">'+sch.sub+'</p>';
+  h+=rowHtml('Steps',stepsHint(n),'<input id="steps" class="num" type="number" inputmode="numeric" min="0" max="100000" step="100" aria-label="Steps" value="'+(typeof d.steps==='number'?d.steps:'')+'">','stepsHint');
+  if(sch.session){
+    h+=rowHtml('Session '+sch.session,(dow(n)===0?'Only if Saturday was missed':''),segHtml('session',[['y','Done']],d.session));
+  }
+  h+=rowHtml('Meals on plan','Out of 3',segHtml('meals',[[0,'0'],[1,'1'],[2,'2'],[3,'3']],d.meals));
+  var wv=typeof d.water==='number'?d.water:0;
+  h+=rowHtml('Water','Glasses, aim for 8','<div class="step"><button type="button" data-act="water" data-d="-1" aria-label="One glass less">&minus;</button><output aria-live="polite">'+wv+'</output><button type="button" data-act="water" data-d="1" aria-label="One glass more">+</button></div>');
+  h+=rowHtml('Takeaway','One planned a week',segHtml('takeaway',[['n','No'],['y','Yes']],d.takeaway));
+  h+=rowHtml('Alcohol or sugary drink','Best kept at No',segHtml('sugar',[['n','No'],['y','Yes']],d.sugar));
+  return h+'</section>';
+}
+
+function chartHtml(){
+  var p=state.profile;
+  var W=320,H=150,pl=36,pr=12,pt=12,pb=24,xmax=10;
+  var pts=[{x:0,kg:p.start}];
+  Object.keys(state.weights).forEach(function(k){
+    var x=weekNo(fromYmd(k));
+    if(x>=1&&x<=12)pts.push({x:x,kg:state.weights[k]});
+  });
+  pts.sort(function(a,b){return a.x-b.x;});
+  var goalKg=p.start-p.goal;
+  var lo=goalKg,hi=p.start;
+  pts.forEach(function(q){lo=Math.min(lo,q.kg);hi=Math.max(hi,q.kg);});
+  lo-=0.5;hi+=0.5;
+  function X(x){return pl+(x/xmax)*(W-pl-pr);}
+  function Y(v){return pt+(1-(v-lo)/(hi-lo))*(H-pt-pb);}
+  var s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Weight by week against your goal">';
+  s+='<line class="axis" x1="'+pl+'" y1="'+(H-pb)+'" x2="'+(W-pr)+'" y2="'+(H-pb)+'"/>';
+  s+='<line class="goal" x1="'+pl+'" y1="'+Y(goalKg)+'" x2="'+(W-pr)+'" y2="'+Y(goalKg)+'"/>';
+  s+='<text x="'+(pl-4)+'" y="'+(Y(goalKg)+4)+'" text-anchor="end">'+kg(goalKg)+'</text>';
+  s+='<text x="'+(pl-4)+'" y="'+(Y(p.start)+4)+'" text-anchor="end">'+kg(p.start)+'</text>';
+  s+='<text x="'+X(0)+'" y="'+(H-6)+'" text-anchor="start">Start</text>';
+  s+='<text x="'+X(5)+'" y="'+(H-6)+'" text-anchor="middle">Week 5</text>';
+  s+='<text x="'+X(10)+'" y="'+(H-6)+'" text-anchor="end">Week 10</text>';
+  if(pts.length>1){
+    s+='<polyline class="ln" points="'+pts.map(function(q){return X(q.x).toFixed(1)+','+Y(q.kg).toFixed(1);}).join(' ')+'"/>';
+  }
+  pts.forEach(function(q){s+='<circle class="pt" cx="'+X(q.x).toFixed(1)+'" cy="'+Y(q.kg).toFixed(1)+'" r="4"/>';});
+  return s+'</svg>';
+}
+
+function summaryText(mon){
+  var p=state.profile,s=weekStats(mon),w=weekNo(mon),wt=state.weights[ymd(mon)],L=[];
+  L.push(p.name+', '+(w>=1?'week '+w:'pre-start week')+' ('+fmtShort(mon)+' to '+fmtShort(mon+6)+')');
+  L.push('Days logged: '+s.logged+' of 7');
+  L.push('Weigh-in: '+(typeof wt==='number'?kg(wt)+' kg ('+signed(wt-p.start)+' kg since start)':'not logged'));
+  L.push('Sessions done: '+s.sessions+' of 3');
+  var t=stepTarget(w);
+  L.push('Average steps: '+(s.steps===null?'not logged':thou(s.steps)+(t?' (target '+thou(t)+')':'')));
+  L.push('Meals on plan: '+s.meals+' of '+s.mealsMax);
+  L.push('Takeaways: '+s.take);
+  L.push('Alcohol or sugary drink days: '+s.sugar);
+  L.push('Average water: '+(s.water===null?'not logged':(Math.round(s.water*10)/10)+' glasses'));
+  L.push('How the week felt / anything that got in the way: ');
+  return L.join('\n');
+}
+
+function weekDynHtml(){
+  var mon=ui.weekSel,s=weekStats(mon),w=weekNo(mon),t=stepTarget(w);
+  var letters=['M','T','W','T','F','S','S'];
+  var h='<div class="dots" role="group" aria-label="Days logged this week">';
+  s.days.forEach(function(d,i){
+    h+='<div>'+letters[i]+'<div class="dot'+(d.any?' on':'')+(d.session?' sess':'')+'" title="'+fmt(d.n)+'"></div></div>';
+  });
+  h+='</div><p class="hint" style="text-align:center;margin-bottom:10px">Filled means logged. A ring means a session was done.</p>';
+  function st(a,b){return '<div class="stat"><span>'+a+'</span><span>'+b+'</span></div>';}
+  var wt=state.weights[ymd(mon)],p=state.profile;
+  h+=st('Weigh-in',typeof wt==='number'?kg(wt)+' kg ('+signed(wt-p.start)+' since start)':'Not logged');
+  h+=st('Sessions done',s.sessions+' of 3');
+  h+=st('Average steps',s.steps===null?'Not logged':thou(s.steps)+(t?' (target '+thou(t)+')':''));
+  h+=st('Meals on plan',s.mealsMax?s.meals+' of '+s.mealsMax:'Not logged');
+  h+=st('Takeaways',s.take+' (one planned)');
+  h+=st('Alcohol or sugary drink days',String(s.sugar));
+  h+=st('Average water',s.water===null?'Not logged':(Math.round(s.water*10)/10)+' glasses');
+  h+=chartHtml();
+  h+='<h3 class="section-title">Check-in summary</h3><p class="hint" style="margin-bottom:8px">Edit anything you would rather leave out, then copy it and paste it into our chat.</p>';
+  h+='<textarea id="sum" class="sum" aria-label="Check-in summary">'+esc(summaryText(mon))+'</textarea>';
+  h+='<div class="btns"><button type="button" class="btn" data-act="copy">Copy summary</button></div><p class="hint" id="copymsg" role="status" style="margin-top:10px"></p>';
+  return h;
+}
+
+function weekView(){
+  var mon=ui.weekSel,w=weekNo(mon),wl;
+  if(w<1)wl='Before week 1';else if(w<=10)wl='Week '+w+' of 10';else wl='After week 10';
+  var wt=state.weights[ymd(mon)];
+  return '<div class="daynav weekbar"><button type="button" class="sq" data-act="prevweek" aria-label="Earlier week">&lsaquo;</button>'+
+    '<div class="dayhead"><div class="date">'+wl+'</div><div class="hint">'+fmtShort(mon)+' to '+fmtShort(mon+6)+'</div></div>'+
+    '<button type="button" class="sq" data-act="nextweek" aria-label="Later week"'+(mon>=monday(TODAY_N)?' disabled':'')+'>&rsaquo;</button></div>'+
+    rowHtml('Weigh-in (kg)','Once a week, same morning, before eating','<input id="wt" class="num" type="number" inputmode="decimal" step="0.1" min="30" max="300" aria-label="Weigh-in in kilograms" value="'+(typeof wt==='number'?wt:'')+'">')+
+    '<div id="wk-dyn">'+weekDynHtml()+'</div>';
+}
+
+function planView(){
+  return '<h2 class="plan-title" style="margin-bottom:12px">The plan</h2>'+
+  '<details open><summary>Eating</summary><ul>'+
+  '<li>Half the plate veg or salad, a quarter protein, a quarter carbs (roti, boiled potato or rice). Spice as much as you like. Riaan\u2019s portions are a bit bigger than Trish\u2019s.</li>'+
+  '<li>Drink water. No sugary cooldrinks and no beer.</li>'+
+  '<li>Boil or bake instead of frying, use less oil, and bulk out curries with beans and lentils.</li>'+
+  '<li>Go easy on red meat and skip organ meats.</li>'+
+  '<li>Breakfast: overnight oats or eggs. Lunch: leftovers.</li>'+
+  '<li>One planned takeaway a week, grilled rather than fried.</li></ul>'+
+  '<h3>Sunday batch cook, rotate through</h3><ul>'+
+  '<li>Lentil dhal with roti</li><li>Skinless chicken curry with boiled baby potatoes</li><li>Chana-aloo (chickpea and potato) curry</li><li>Bean chilli with a little lean mince</li><li>Spicy egg curry with roti</li></ul></details>'+
+  '<details><summary>Training</summary>'+
+  '<p>Tuesday, Thursday and one weekend day. 8 to 12 reps of each move, side plank 20 to 30 seconds. Do 2 rounds in weeks 1 to 3 and 3 rounds from week 4. You share one 4 kg kettlebell, so one rests while the other works.</p>'+
+  '<h3>Session A</h3><ul><li>Chair sit-to-stands (Riaan: skip if the foot hurts)</li><li>Incline push-ups on a counter</li><li>Kettlebell rows</li><li>Glute bridges</li><li>Dead bug</li></ul>'+
+  '<h3>Session B</h3><ul><li>Kettlebell overhead press</li><li>Kettlebell hip hinge (only if pain-free)</li><li>Chair dips</li><li>Side plank</li><li>Marching on the spot</li></ul>'+
+  '<h3>Session C</h3><ul><li>Brisk 15-minute walk</li><li>One round of Session A and one of Session B</li></ul>'+
+  '<p class="note">When it gets easy: more rounds, slower reps, or harder versions such as feet-elevated push-ups.</p></details>'+
+  '<details><summary>Walking</summary><p>Week 1 measures your normal steps, so just log them. After that the target rises by about 1,000 steps a day every two weeks. The Today tab shows your target once you have logged 3 days in week 1.</p></details>'+
+  '<details><summary>Look after yourself</summary><ul>'+
+  '<li>Stop any move that hurts. While Riaan\u2019s gout flare settles, no jumping, running or lunges.</li>'+
+  '<li>Gout that keeps coming back is worth a doctor\u2019s visit. A pharmacist can confirm that what you take suits it.</li>'+
+  '<li>Trish\u2019s food changes should sit alongside what her doctor advises about her cholesterol.</li>'+
+  '<li>This is general guidance, not medical advice.</li></ul></details>'+
+  '<div style="margin-top:26px"><button type="button" class="btn alt" data-act="edit-setup">Edit setup</button> '+
+  '<button type="button" class="btn '+(ui.clearArmed?'danger':'alt')+'" data-act="clear">'+(ui.clearArmed?'Tap again to erase everything on this phone':'Clear my log')+'</button></div>'+
+  '<p class="note" style="margin-top:14px">Your log is saved on this phone only. Trish\u2019s phone keeps its own.</p>';
+}
+
+function headerHtml(){
+  var p=state.profile;
+  var h='<div class="top"><span class="who">'+(p?esc(p.name):'')+'</span>'+(p?'<button type="button" class="link" data-act="edit-setup">Edit setup</button>':'')+'</div>';
+  if(!storageOK)h+='<p class="warn">This browser is not saving your log, so it will be lost when you close the page. Copy your week summary from the Week tab often.</p>';
+  return h;
+}
+
+function setupHtml(){
+  var p=state.profile||{},editing=!!state.profile;
+  var name=p.name||'';
+  return '<div class="in"><h2>Set up your log</h2><p class="hint">Saved on this phone only.</p>'+
+  '<div style="margin-top:22px;font-weight:700">Whose phone is this?</div>'+
+  '<div class="chips" role="radiogroup" aria-label="Name">'+
+  '<label><input type="radio" name="who" value="Riaan"'+(name==='Riaan'?' checked':'')+'><span>Riaan</span></label>'+
+  '<label><input type="radio" name="who" value="Trish"'+(name==='Trish'?' checked':'')+'><span>Trish</span></label></div>'+
+  '<label class="field">Start weight (kg)<input id="sw" class="num" type="number" inputmode="decimal" step="0.1" min="30" max="300" value="'+(p.start!==undefined?p.start:'')+'"></label>'+
+  '<label class="field">Kilograms to lose by 1 December<input id="gl" class="num" type="number" inputmode="decimal" step="0.5" min="1" max="60" value="'+(p.goal!==undefined?p.goal:'')+'"></label>'+
+  '<p class="err" id="err" role="alert"></p>'+
+  '<div class="btns"><button type="button" class="btn" data-act="save-setup">Save</button>'+(editing?'<button type="button" class="btn alt" data-act="cancel-setup">Cancel</button>':'')+'</div></div>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  var needSetup=!state.profile||ui.setupOpen;
+  $('#hdr').innerHTML=headerHtml();
+  var v=$('#view');
+  if(ui.tab==='today')v.innerHTML=state.profile?todayView():'';
+  else if(ui.tab==='week')v.innerHTML=state.profile?weekView():'';
+  else v.innerHTML=planView();
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'),function(b){
+    if(b.dataset.tab===ui.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
+  });
+  var s=$('#setup');
+  if(needSetup){s.innerHTML=setupHtml();s.hidden=false;}
+  else{s.hidden=true;s.innerHTML='';}
+}
+
+/* ---------- events ---------- */
+function copyMsg(t){var m=$('#copymsg');if(m)m.textContent=t;}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');
+  if(!t)return;
+  var act=t.dataset.act;
+  if(act==='tab'){ui.tab=t.dataset.tab;ui.clearArmed=false;render();window.scrollTo(0,0);}
+  else if(act==='prev'){ui.sel-=1;render();}
+  else if(act==='next'){if(ui.sel<TODAY_N){ui.sel+=1;render();}}
+  else if(act==='prevweek'){ui.weekSel-=7;render();}
+  else if(act==='nextweek'){if(ui.weekSel<monday(TODAY_N)){ui.weekSel+=7;render();}}
+  else if(act==='set'){
+    var key=t.dataset.key,val=t.dataset.val,cur=getDay(ui.sel)[key];
+    var same=cur!==undefined&&String(cur)===val;
+    setDay(ui.sel,key,same?null:(key==='meals'?Number(val):val));
+    render();
+  }
+  else if(act==='water'){
+    var c=getDay(ui.sel).water;c=typeof c==='number'?c:0;
+    c=clamp(c+Number(t.dataset.d),0,30);
+    setDay(ui.sel,'water',c===0?null:c);
+    render();
+  }
+  else if(act==='edit-setup'){ui.setupOpen=true;render();}
+  else if(act==='cancel-setup'){ui.setupOpen=false;render();}
+  else if(act==='save-setup'){
+    var chosen=document.querySelector('input[name="who"]:checked');
+    var sw=parseFloat($('#sw').value),gl=parseFloat($('#gl').value),err=$('#err');
+    if(!chosen){err.textContent='Choose Riaan or Trish.';return;}
+    if(!(sw>=30&&sw<=300)){err.textContent='Enter your start weight in kilograms, for example 82.5.';return;}
+    if(!(gl>=1&&gl<=60)){err.textContent='Enter how many kilograms you want to lose, for example 5.';return;}
+    state.profile={name:chosen.value,start:sw,goal:gl};
+    save();ui.setupOpen=false;render();
+  }
+  else if(act==='copy'){
+    var ta=$('#sum');
+    var fallback=function(){
+      ta.focus();ta.select();
+      var ok=false;try{ok=document.execCommand('copy');}catch(x){}
+      copyMsg(ok?'Copied. Paste it into our chat.':'Select the text above and copy it by hand.');
+    };
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ta.value).then(function(){copyMsg('Copied. Paste it into our chat.');},fallback);
+    }else{fallback();}
+  }
+  else if(act==='clear'){
+    if(!ui.clearArmed){ui.clearArmed=true;render();}
+    else{state.days={};state.weights={};save();ui.clearArmed=false;render();}
+  }
+});
+
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==='steps'){
+    var v=t.value===''?null:Math.round(Number(t.value));
+    if(v!==null&&(isNaN(v)||v<0||v>100000))return;
+    setDay(ui.sel,'steps',v);
+  }
+  else if(t.name==='who'){
+    var gl=$('#gl');
+    if(gl&&(gl.value===''||gl.dataset.auto==='1')){gl.value=t.value==='Trish'?'5':'6';gl.dataset.auto='1';}
+  }
+  else if(t.id==='gl'){t.dataset.auto='0';}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.name==='who'){
+    var gl=$('#gl');
+    if(gl&&(gl.value===''||gl.dataset.auto==='1')){gl.value=t.value==='Trish'?'5':'6';gl.dataset.auto='1';}
+  }
+  else if(t.id==='wt'){
+    var k=ymd(ui.weekSel),v=parseFloat(t.value);
+    if(t.value===''||isNaN(v)){delete state.weights[k];}
+    else if(v>=30&&v<=300){state.weights[k]=v;}
+    save();
+    var d=$('#wk-dyn');if(d)d.innerHTML=weekDynHtml();
+  }
+  else if(t.id==='steps'){
+    var h=$('#stepsHint');if(h)h.textContent=stepsHint(ui.sel);
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
